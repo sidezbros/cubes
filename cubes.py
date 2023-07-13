@@ -4,6 +4,7 @@ import math
 import numpy as np
 import argparse
 from time import perf_counter
+from rle import rle, render_shape
 
 def all_rotations(polycube):
     """
@@ -135,7 +136,12 @@ def generate_polycubes(n, use_cache=False):
         for new_cube in expand_cube(base_cube):
             if not cube_exists_rle(new_cube, polycubes_rle):
                 polycubes.append(new_cube)
-                polycubes_rle.add(rle(new_cube))
+                cube_rle = rle(new_cube)
+                polycubes_rle.add(cube_rle)
+                #print(cube_rle)
+                #if cube_rle[-1] == 1:
+                    #print('Extra for Chiral')
+                    #polycubes.append(np.flipud(new_cube))
 
         if (idx % 100 == 0):               
             perc = round((idx / len(base_cubes)) * 100,2)
@@ -149,7 +155,7 @@ def generate_polycubes(n, use_cache=False):
 
     return polycubes
 
-def rle(polycube):
+def rle_old(polycube):
     """
     Computes a simple run-length encoding of a given polycube. This function allows cubes to be more quickly compared via hashing.
   
@@ -200,8 +206,11 @@ def cube_exists_rle(polycube, polycubes_rle):
     boolean: True if polycube is already present in the set of all cubes so far.
   
     """
+    #if rle(polycube) in polycubes_rle:
+    #    return True
+
     for cube_rotation in all_rotations(polycube):
-        if rle(cube_rotation) in polycubes_rle:
+        if rle_old(cube_rotation) in polycubes_rle:
             return True
 
     return False
@@ -232,6 +241,9 @@ if __name__ == "__main__":
 
     print (f"Found {len(all_cubes)} unique polycubes")
     print (f"Elapsed time: {round(t1_stop - t1_start,3)}s")
+
+    #for polycube in all_cubes:
+    #    render_shape(polycube)
 
 
 # Code for if you want to generate pictures of the sets of cubes. Will work up to about n=8, before there are simply too many!
