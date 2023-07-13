@@ -215,12 +215,12 @@ if __name__ == "__main__":
                     help='The number of cubes within each polycube')
     
     #Requires python >=3.9
-    parser.add_argument('--cache', action=argparse.BooleanOptionalAction)
+    #parser.add_argument('--cache', action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
    
     n = args.n
-    use_cache = args.cache if args.cache is not None else True
+    use_cache = False #args.cache if args.cache is not None else True
 
     # Start the timer
     t1_start = perf_counter()
