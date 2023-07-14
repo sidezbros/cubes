@@ -95,6 +95,20 @@ def expand_cube(cube):
         new_cube[x,y,z] = 1
         yield crop_cube(new_cube)
 
+
+def check_existing(new_rle, new_cube, polycubes, polycubes_rle):
+    if new_rle not in polycubes_rle:
+        polycubes.append(new_cube)
+        polycubes_rle.append(new_rle)
+    else:
+        index = polycubes_rle.index(new_rle)
+        for rotation in all_rotations(new_cube):
+            if np.array_equal(rotation, polycubes[index]):
+                return
+        new_rle[0] += 1
+        check_existing(new_rle, new_cube, polycubes, polycubes_rle)
+
+
 def generate_polycubes(n, use_cache=False):
     """
     Generates all polycubes of size n
@@ -127,21 +141,15 @@ def generate_polycubes(n, use_cache=False):
 
     # Empty list of new n-polycubes
     polycubes = []
-    polycubes_rle = set()
+    polycubes_rle = []
 
     base_cubes = generate_polycubes(n-1, use_cache)
 
     for idx, base_cube in enumerate(base_cubes):
         # Iterate over possible expansion positions
         for new_cube in expand_cube(base_cube):
-            if not cube_exists_rle(new_cube, polycubes_rle):
-                polycubes.append(new_cube)
-                cube_rle = rle(new_cube)
-                polycubes_rle.add(cube_rle)
-                #print(cube_rle)
-                #if cube_rle[-1] == 1:
-                    #print('Extra for Chiral')
-                    #polycubes.append(np.flipud(new_cube))
+            new_rle = rle(new_cube)
+            check_existing(new_rle, new_cube, polycubes, polycubes_rle)
 
         if (idx % 100 == 0):               
             perc = round((idx / len(base_cubes)) * 100,2)
@@ -192,28 +200,6 @@ def rle_old(polycube):
 
     return tuple(r)
 
-def cube_exists_rle(polycube, polycubes_rle):
-    """
-    Determines if a polycube has already been seen.
-  
-    Considers all possible rotations of a cube against the existing cubes stored in memory.
-    Returns True if the cube exists, or False if it is new.
-  
-    Parameters:
-    polycube (np.array): 3D Numpy byte array where 1 values indicate polycube positions
-  
-    Returns:
-    boolean: True if polycube is already present in the set of all cubes so far.
-  
-    """
-    #if rle(polycube) in polycubes_rle:
-    #    return True
-
-    for cube_rotation in all_rotations(polycube):
-        if rle_old(cube_rotation) in polycubes_rle:
-            return True
-
-    return False
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

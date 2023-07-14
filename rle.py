@@ -88,16 +88,14 @@ def find_second_moment(polycube, centroid, threshold):
     return moments
 
 
-def find_chirality_old(polycube):
+def find_balance(polycube):
     balance = []
     for axis in ((1, 2), (0, 2), (0, 1)):
         s = np.sum(polycube, axis=axis)
-        val = int(np.heaviside(np.sum(s[:len(s) // 2]) - np.sum(s[len(s) % 2 + len(s) // 2:]), 0.5)*2 - 1)
-        if val == 0:
-            val = 1
-        balance.append(val)
+        #val = int(np.heaviside(, 0.5)*2 - 1)
+        balance.append(abs(np.sum(s[:len(s) // 2]) - np.sum(s[len(s) % 2 + len(s) // 2:])))
 
-    return balance[0]*balance[1]*balance[2]
+    return balance
 
 
 def find_chirality(polycube):
@@ -108,7 +106,7 @@ def find_chirality(polycube):
 
 def rle(polycube):
     n = np.sum(polycube)
-    encoded_cube = []
+    encoded_cube = [0]
     encoded_cube.extend(np.sort(polycube.shape))
 
     centroid = find_centroid(polycube, n)
@@ -117,7 +115,7 @@ def rle(polycube):
     chirality = find_chirality(polycube)
     encoded_cube.append(chirality)
     #render_shape(polycube)
-    return tuple(encoded_cube)
+    return encoded_cube
 
 def render_shape(polycube):
     colors = np.empty(polycube.shape, dtype=object)
