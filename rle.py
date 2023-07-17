@@ -71,6 +71,26 @@ order_cube = np.array([[[1, 2],
 corner_cube = np.ones((2, 2, 2))
 corner_cube[0,0,0] = 0
 
+sevenprob1 = np.array([[[0,1],
+  [0,1],
+  [0,1]],
+ [[0,0],
+  [1,1],
+  [0,0]],
+ [[0,0],
+  [1,1],
+  [0,0]]])
+
+sevenprob2 = np.array([[[0,1],
+  [0,1],
+  [0,0]],
+ [[0,0],
+  [1,1],
+  [1,0]],
+ [[0,1],
+  [0,1],
+  [0,0]]])
+
 def generate_distance_cube(n):
     cube = np.empty((n, n, n), dtype=int)
     for x in range(n):
@@ -179,16 +199,18 @@ def rle(polycube):
     #for distcube in all_corners(gen_cube[:polycube.shape[0], :polycube.shape[1], :polycube.shape[2]]):
     #    corner_vals.append(np.sum(distcube * polycube))
     corner_vals = calc_all_corners(gen_cube, polycube)
-    relation = relate_corners_test(corner_vals)
-    encoded_cube.extend(np.sort(corner_vals.flatten()))
+    #relation = relate_corners_test(corner_vals)
+
     #centroid = find_centroid(polycube, n)
     #moment = find_second_moment(polycube, centroid, 10**-5)
     #encoded_cube.extend(np.sort(moment))
+    print(relate_corners_test(corner_vals))
+    encoded_cube.extend(np.sort(corner_vals.flatten()))
     #print(np.linalg.norm(polycube))
     chirality = find_chirality(polycube)
     encoded_cube.append(chirality)
     #encoded_cube.extend(np.sort(diag_sum(polycube)))
-    #render_shape(polycube)
+    render_shape(polycube)
     return tuple(encoded_cube)
 
 def render_shape(polycube):
@@ -213,7 +235,8 @@ def render_shape(polycube):
 #    render_shape(cube)
     #print(cube)
 #print(order_cube[0,1,0])
-#print(rle(testcube3))
+print(rle(sevenprob1))
+print(rle(sevenprob2))
 #print(rle(np.rot90(testcube3, 2, (0, 2))))
 #print(rle(np.flipud(testcube)))
 #print(generate_distance_cube(3))
