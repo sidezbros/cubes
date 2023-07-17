@@ -4,7 +4,8 @@ import math
 import numpy as np
 import argparse
 from time import perf_counter
-from rle import rle, render_shape
+from rle import orient_polycube, render_shape, generate_distance_cube, calc_all_corners
+
 
 def all_rotations(polycube):
     """
@@ -151,8 +152,12 @@ def generate_polycubes(n, use_cache=False):
     for idx, base_cube in enumerate(base_cubes):
         # Iterate over possible expansion positions
         for new_cube in expand_cube(base_cube):
-            new_rle = rle(new_cube)
-            check_existing(new_rle, new_cube, polycubes, polycubes_rle)
+            oriented_cube = orient_polycube(new_cube)
+            if rle_old(oriented_cube) not in polycubes_rle:
+                polycubes.append(oriented_cube)
+                polycubes_rle.add(rle_old(oriented_cube))
+                print(new_cube)
+                render_shape(oriented_cube)
 
         if (idx % 100 == 0):               
             perc = round((idx / len(base_cubes)) * 100,2)

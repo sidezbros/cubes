@@ -91,13 +91,11 @@ sevenprob2 = np.array([[[0,1],
   [0,1],
   [0,0]]])
 
-def generate_distance_cube(n):
-    cube = np.empty((n, n, n), dtype=int)
-    for x in range(n):
-        for y in range(n):
-            for z in range(n):
-                cube[x, y, z] = (x**2+y**2+z**2)**2  # distance is already squared
-    return cube  # returns r^2 for each distance
+zcube1 = np.array([[[0, 1, 1],
+                    [1, 1, 0]]])
+zcube2 = np.array([[[0, 1],
+                    [1, 1],
+                    [1, 0]]])
 
 def find_centroid(polycube, n):
     centroid = []
@@ -126,30 +124,13 @@ def find_second_moment(polycube, centroid, threshold):
         moments.append(int(round(m, 10)*10**10))
     return moments
 
-
-def find_balance(polycube):
-    balance = []
-    for axis in ((1, 2), (0, 2), (0, 1)):
-        s = np.sum(polycube, axis=axis)
-        #val = int(np.heaviside(, 0.5)*2 - 1)
-        balance.append(abs(np.sum(s[:len(s) // 2]) - np.sum(s[len(s) % 2 + len(s) // 2:])))
-
-    return balance
-
-def diag_sum(polycube):
-    sums = []
-    for axis in range(3):
-        plane = np.sum(polycube, axis=axis)
-        plane2 = np.flip(np.sum(polycube, axis=axis))
-        sums.append(np.trace(plane)+np.trace(plane2))
-    return sums
-
-
-def find_chirality(polycube):
-    for rotation in all_rotations(polycube):
-        if np.array_equal(np.flipud(polycube), rotation):
-            return 0
-    return 1
+def generate_distance_cube(n):
+    cube = np.empty((n, n, n), dtype=int)
+    for x in range(n):
+        for y in range(n):
+            for z in range(n):
+                cube[x, y, z] = (x**2+y**2+z**2)**2  # distance is already squared
+    return cube  # returns r^2 for each distance
 
 def calc_all_corners(distcube, polycube):
     corners = np.empty((2, 2, 2), dtype=int)
@@ -161,58 +142,44 @@ def calc_all_corners(distcube, polycube):
         corners[(i+i//2) % 2, i//2, 1] = np.sum(distcube[:flipcube.shape[0], :flipcube.shape[1], :flipcube.shape[2]]*flipcube)
     return corners
 
-def relate_corners(corners):
-    relation = np.empty((8,4), dtype=int)
-    for x in range(2):
-        for y in range(2):
-            for z in range(2):
-                index = x+y*2+z*4
-                relation[index, 0] = corners[x, y, z]
-                relation[index, 1:] = np.sort([corners[(x+1) % 2, y, z], corners[x, (y+1) % 2, z], corners[x, y, (z+1) % 2]])
-
-    return np.sort(relation.view('i,i,i,i'), order=['f0', 'f1', 'f2', 'f3'], axis=0).view(np.int)
-
-def relate_corners_test(corners):
-    relation = np.empty((8,2), dtype=int)
-    for x in range(2):
-        for y in range(2):
-            for z in range(2):
-                index = x+y*2+z*4
-                relation[index, 0] = corners[x, y, z]
-                relation[index, 1] = corners[(x+1) % 2, y, z] * corners[x, (y+1) % 2, z] * corners[x, y, (z+1) % 2]
-
-    return np.sort(relation.view('i,i'), order=['f0', 'f1'], axis=0).view(np.int)
-def all_corners(cube):
-    corners = [[]]*8
-    flipped = np.rot90(cube, 2, (0, 2))
-    for i in range(4):
-        corners[i] = np.rot90(cube, i, (0, 1))
-        corners[i+4] = np.rot90(flipped, i-1, (0, 1))
-    return corners
-
-def rle(polycube):
+def orient_polycube(polycube):
+    #render_shape(polycube)
     n = np.sum(polycube)
-    encoded_cube = []
-    encoded_cube.extend(np.sort(polycube.shape))
-    corner_vals = []
-    gen_cube = generate_distance_cube(n)
-    #for distcube in all_corners(gen_cube[:polycube.shape[0], :polycube.shape[1], :polycube.shape[2]]):
-    #    corner_vals.append(np.sum(distcube * polycube))
-    corner_vals = calc_all_corners(gen_cube, polycube)
-    #relation = relate_corners_test(corner_vals)
+    scalecube = np.array([[[1, 10],[10, 1000]],[[10, 1000],[1000, 10000]]])
+    distcube = generate_distance_cube(n)
+    corners = calc_all_corners(distcube, polycube)
+    sums = []
 
-    #centroid = find_centroid(polycube, n)
-    #moment = find_second_moment(polycube, centroid, 10**-5)
-    #encoded_cube.extend(np.sort(moment))
-    print(relate_corners_test(corner_vals))
-    encoded_cube.extend(np.sort(corner_vals.flatten()))
-    #print(np.linalg.norm(polycube))
-    chirality = find_chirality(polycube)
-    encoded_cube.append(chirality)
-    #encoded_cube.extend(np.sort(diag_sum(polycube)))
-    render_shape(polycube)
-    return tuple(encoded_cube)
+    all_orientations = list(all_rotations(corners))
+    for i in range(24):
+        sums.append(np.sum(all_orientations[i] * scalecube))
+    sums = np.array(sums)
+    min_index = np.where(sums == sums.min())[0]
+    #print(sums[min_index])
+    cubes = list(all_rotations(polycube))
+    moments = []
+    for index in min_index:
+        moments.append(find_second_moment(cubes[index], find_centroid(cubes[index], n), 10**-5))
+        render_shape(cubes[index])
+    moments = np.array(moments)
+    #print(min_index)
+    #print(moments)
 
+    indexes_to_keep = (np.where((moments[:, 0] == moments.min())))[0]
+    print(len(indexes_to_keep))
+    if len(indexes_to_keep) == 1:
+        return cubes[min_index[indexes_to_keep[0]]]
+    #min_index = min_index[indexes_to_keep]
+    #moments = moments[indexes_to_keep]
+
+    #indexes_to_keep = (np.where((moments[:, 2] == moments.max())))[0]
+
+    sums = []
+    for index in indexes_to_keep:
+
+        corners3 = (calc_all_corners(distcube, cubes[min_index[index]]))
+        sums.append(np.sum(corners3 * scalecube))
+    return cubes[min_index[indexes_to_keep[np.argmin(sums)]]]
 def render_shape(polycube):
     colors = np.empty(polycube.shape, dtype=object)
     colors[:] = '#FFD65DC0'
@@ -226,18 +193,10 @@ def render_shape(polycube):
     plt.axis("off")
     plt.show()
 
-#for cube in all_corners(corner_cube):
-#    for x in range(2):
-#        for y in range(2):
-#            for z in range(2):
-#                if cube[x, y, z] == 0:
-#                    print((x, y, z))
-#    render_shape(cube)
-    #print(cube)
-#print(order_cube[0,1,0])
-print(rle(sevenprob1))
-print(rle(sevenprob2))
-#print(rle(np.rot90(testcube3, 2, (0, 2))))
-#print(rle(np.flipud(testcube)))
-#print(generate_distance_cube(3))
+print('zcube1')
+(orient_polycube(zcube1))
+print('zcube2')
+(orient_polycube(zcube2))
+#orient_polycube(sevenprob2)
+
 
