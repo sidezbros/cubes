@@ -97,16 +97,19 @@ def expand_cube(cube):
 
 
 def check_existing(new_rle, new_cube, polycubes, polycubes_rle):
+    #print(new_rle)
     if new_rle not in polycubes_rle:
         polycubes.append(new_cube)
-        polycubes_rle.append(new_rle)
-    else:
-        index = polycubes_rle.index(new_rle)
-        for rotation in all_rotations(new_cube):
-            if np.array_equal(rotation, polycubes[index]):
-                return
-        new_rle[0] += 1
-        check_existing(new_rle, new_cube, polycubes, polycubes_rle)
+        polycubes_rle.add(new_rle)
+        if new_rle[-1]:
+            polycubes.append(np.flipud(new_cube))
+    #else:
+    #    index = polycubes_rle.index(new_rle)
+    #    for rotation in all_rotations(new_cube):
+    #        if np.array_equal(rotation, polycubes[index]):
+    #            return
+    #    new_rle[0] += 1
+    #    check_existing(new_rle, new_cube, polycubes, polycubes_rle)
 
 
 def generate_polycubes(n, use_cache=False):
@@ -141,7 +144,7 @@ def generate_polycubes(n, use_cache=False):
 
     # Empty list of new n-polycubes
     polycubes = []
-    polycubes_rle = []
+    polycubes_rle = set()
 
     base_cubes = generate_polycubes(n-1, use_cache)
 
