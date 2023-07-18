@@ -154,10 +154,18 @@ def generate_polycubes(n, use_cache=False):
         for new_cube in expand_cube(base_cube):
             oriented_cube = orient_polycube(new_cube)
             if rle_old(oriented_cube) not in polycubes_rle:
-                polycubes.append(oriented_cube)
-                polycubes_rle.add(rle_old(oriented_cube))
-                print(new_cube)
-                render_shape(oriented_cube)
+                mistake = False
+                for testcube in all_rotations(new_cube):
+                    if rle_old(testcube) in polycubes_rle:
+                        print(new_cube)
+                        render_shape(new_cube)
+                        mistake = True
+                if not mistake:
+                    polycubes.append(oriented_cube)
+                    polycubes_rle.add(rle_old(oriented_cube))
+                #print(new_cube)
+                #if n == 5:
+                #    render_shape(oriented_cube)
 
         if (idx % 100 == 0):               
             perc = round((idx / len(base_cubes)) * 100,2)
