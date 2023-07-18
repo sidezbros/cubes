@@ -202,9 +202,7 @@ def orient_polycube(polycube):
     low_corner_low_neighbors_indexes = np.where(np.sum(all_neighbors, axis=1)==np.sum(all_neighbors, axis=1).min())[0]
     trimmed_neighbors = all_neighbors[low_corner_low_neighbors_indexes]
     trimmed_orientations = low_corner_orientations[low_corner_low_neighbors_indexes]
-    for index in low_corner_indexes:
-        render_shape(cubes[pass_moment_check[index]])
-    print(all_neighbors)
+    #print(all_neighbors)
     if len(low_corner_low_neighbors_indexes) == 1:
         return cubes[pass_moment_check[low_corner_indexes[low_corner_low_neighbors_indexes[0]]]]
     # X min, Y max
@@ -309,7 +307,7 @@ def render_shape(polycube):
 #    if not np.array_equal(oriented, sixpain):
 #        #print(oriented)
 #        render_shape(oriented)
-(orient_polycube(sevenpain))
+#(orient_polycube(sevenpain))
 #render_shape(orient_polycube(corner_t2))
 #print('zcube2')
 #render_shape(orient_polycube(zcube2))

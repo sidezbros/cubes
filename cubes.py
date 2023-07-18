@@ -148,7 +148,7 @@ def generate_polycubes(n, use_cache=False):
     polycubes_rle = set()
 
     base_cubes = generate_polycubes(n-1, use_cache)
-
+    mistake_counter = 0
     for idx, base_cube in enumerate(base_cubes):
         # Iterate over possible expansion positions
         for new_cube in expand_cube(base_cube):
@@ -157,9 +157,10 @@ def generate_polycubes(n, use_cache=False):
                 mistake = False
                 for testcube in all_rotations(new_cube):
                     if rle_old(testcube) in polycubes_rle:
-                        print(new_cube)
-                        render_shape(new_cube)
+                        #(new_cube)
+                        #render_shape(new_cube)
                         mistake = True
+                        mistake_counter += 1
                 if not mistake:
                     polycubes.append(oriented_cube)
                     polycubes_rle.add(rle_old(oriented_cube))
@@ -172,7 +173,7 @@ def generate_polycubes(n, use_cache=False):
             print(f"\rGenerating polycubes n={n}: {perc}%", end="")
 
     print(f"\rGenerating polycubes n={n}: 100%   ")
-    
+    print('Corrected', mistake_counter)
     if use_cache:
         cache_path = f"cubes_{n}.npy"
         np.save(cache_path, np.array(polycubes, dtype=object), allow_pickle=True)
