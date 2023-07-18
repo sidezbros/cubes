@@ -142,7 +142,7 @@ def generate_polycubes(n, use_cache=False):
             print(f"\rGenerating polycubes n={n}: {perc}%", end="")
 
     print(f"\rGenerating polycubes n={n}: 100%   ")
-    
+    print(len(list(polycubes)), 'polycubes found')
     if use_cache:
         cache_path = f"cubes_{n}.npy"
         np.save(cache_path, np.array(polycubes, dtype=object), allow_pickle=True)
@@ -230,7 +230,7 @@ if __name__ == "__main__":
     # Stop the timer
     t1_stop = perf_counter()
 
-    print (f"Found {len(all_cubes)} unique polycubes")
+    #print (f"Found {len(all_cubes)} unique polycubes")
     print (f"Elapsed time: {round(t1_stop - t1_start,3)}s")
 
 
